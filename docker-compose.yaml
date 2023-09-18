@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_PASSWORD: example
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 3s
+      retries: 2
+    ports:
+      - "5432:5432"
+    networks:
+      - external
+
+  secr:
+    image: secr
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_HOST: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - external
+
+
+volumes:
+  postgres-db-volume:
+
+networks:
+  external:
+    external: true
+    name: external_dev
